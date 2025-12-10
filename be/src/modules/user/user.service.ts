@@ -97,7 +97,9 @@ export class UserService {
     return result;
   }
 
-  async findByIdWithArticleCount(id: number): Promise<UserEntity & { articleCount: number }> {
+  async findByIdWithArticleCount(
+    id: number,
+  ): Promise<UserEntity & { articleCount: number }> {
     if (isNaN(id)) {
       throw new BadRequestException('Invalid user ID', {
         description: 'User ID must be a number',
@@ -273,13 +275,27 @@ export class UserService {
     return user.following;
   }
 
+  async countFollowers(userId: number) {
+    const user = await this.findById(userId);
+    return user.followers.length;
+  }
+
+  async countFollowing(userId: number) {
+    const user = await this.findById(userId);
+    return user.following.length;
+  }
+
+  async countArticles(userId: number) {
+    const user = await this.findById(userId);
+    return user.articles.length;
+  }
+
   async listUsers(options: {
     page?: number;
     limit?: number;
     username?: string;
     email?: string;
-  }) 
-  {
+  }) {
     const page = options.page && options.page > 0 ? options.page : 1;
     const limit = options.limit && options.limit > 0 ? options.limit : 10;
     const where: any = {};
@@ -296,10 +312,20 @@ export class UserService {
       take: limit,
       order: { id: 'ASC' },
     });
+
+    const users = await Promise.all(
+      data.map(async (user) => ({
+        ...user,
+        followingCount: await this.countFollowing(user.id),
+        followersCount: await this.countFollowers(user.id),
+        // articlesCount: await this.countArticles(user.id),
+      })),
+    );
+
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data,
+      users,
       pagination: {
         page,
         limit,
