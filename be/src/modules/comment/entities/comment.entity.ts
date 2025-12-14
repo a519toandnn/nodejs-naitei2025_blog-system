@@ -9,11 +9,10 @@ export class CommentEntity extends BaseEntity {
   @Column({ length: 200, nullable: false })
   body: string;
 
-  @ManyToOne(() => UserEntity, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'authorId' })
   author: UserEntity;
 
-  @Exclude()
   @ManyToOne(() => ArticleEntity, (article) => article.comments, {
     onDelete: 'CASCADE',
   })
