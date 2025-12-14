@@ -22,7 +22,7 @@ export class ArticleListItemDto {
   @Expose()
   reading_time: number;
   @Expose()
-  favoriteCount: number;
+  favoritesCount: number;
   @Expose()
   commentCount: number;
   @Expose()

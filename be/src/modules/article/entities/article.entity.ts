@@ -14,6 +14,8 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  RelationCount,
+  VirtualColumn,
 } from 'typeorm';
 
 @Entity({ name: 'articles' })
@@ -68,12 +70,11 @@ export class ArticleEntity extends BaseEntity {
   })
   favoritedBy: UserEntity[];
 
+  @VirtualColumn({
+    query: (alias) =>
+      `(SELECT COUNT(*) FROM user_favorite_articles ufa WHERE ufa.article_id = ${alias}.id)`,
+  })
   favoritesCount: number;
-
-  @AfterLoad()
-  computeFavoritesCount() {
-    this.favoritesCount = this.favoritedBy ? this.favoritedBy.length : 0;
-  }
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt?: Date;

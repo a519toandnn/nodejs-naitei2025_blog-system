@@ -85,7 +85,7 @@ export class UserService {
 
     const result = await this.userRepository.findOne({
       where: { id },
-      relations: ['following', 'followers'],
+      relations: ['following', 'followers', 'favoritedArticles', 'articles'],
     });
     if (!result) {
       throw new NotFoundException('User not found', {
@@ -95,32 +95,6 @@ export class UserService {
 
     return result;
   }
-
-  // async findByIdWithArticleCount(
-  //   id: number,
-  // ): Promise<UserEntity & { articleCount: number }> {
-  //   if (isNaN(id)) {
-  //     throw new BadRequestException('Invalid user ID', {
-  //       description: 'User ID must be a number',
-  //     });
-  //   }
-
-  //   const user = await this.userRepository
-  //     .createQueryBuilder('user')
-  //     .leftJoinAndSelect('user.following', 'following')
-  //     .leftJoinAndSelect('user.followers', 'followers')
-  //     .loadRelationCountAndMap('user.articleCount', 'user.articles')
-  //     .where('user.id = :id', { id })
-  //     .getOne();
-
-  //   if (!user) {
-  //     throw new NotFoundException('User not found', {
-  //       description: `No user found with ID ${id}`,
-  //     });
-  //   }
-
-  //   return user as UserEntity & { articleCount: number };
-  // }
 
   async findByEmail(email: string) {
     return this.userRepository.findOne({
@@ -298,8 +272,6 @@ export class UserService {
 
     // Tối ưu: Đếm số lượng relation bằng subquery trong 1 lần gọi DB
     queryBuilder
-      // .loadRelationCountAndMap('user.followingCount', 'user.following')
-      // .loadRelationCountAndMap('user.followersCount', 'user.followers')
       .skip((page - 1) * limit)
       .take(limit)
       .orderBy('user.id', 'ASC');

@@ -9,6 +9,7 @@ import {
   JoinTable,
   ManyToMany,
   OneToMany,
+  VirtualColumn,
 } from 'typeorm';
 
 @Entity({ name: 'users' })
@@ -59,16 +60,26 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => NotificationEntity, (notification) => notification.recipient)
   notifications: NotificationEntity[];
 
+  @VirtualColumn({
+    query: (alias) => {
+      return `(SELECT COUNT(*) FROM user_follows uf WHERE uf.follower_id = ${alias}.id)`;
+    },
+  })
   followingCount: number;
-  followersCount: number;
-  articlesCount: number;
 
-  @AfterLoad()
-  computeCounts() {
-    this.followingCount = this.following ? this.following.length : 0;
-    this.followersCount = this.followers ? this.followers.length : 0;
-    this.articlesCount = this.articles ? this.articles.length : 0;
-  }
+  @VirtualColumn({
+    query: (alias) => {
+      return `(SELECT COUNT(*) FROM user_follows uf WHERE uf.following_id = ${alias}.id)`;
+    },
+  })
+  followersCount: number;
+
+  @VirtualColumn({
+    query: (alias) => {
+      return `(SELECT COUNT(*) FROM articles a WHERE a.authorId = ${alias}.id AND a.deleted_at IS NULL)`;
+    },
+  })
+  articlesCount: number;
 
   declare id: number;
 

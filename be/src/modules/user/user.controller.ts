@@ -30,14 +30,12 @@ export class UserController {
     return await this.userService.create(createUserDto);
   }
 
-  // @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(JwtGuard)
   @Serialize(UserDetailDto)
   @Get()
   async getCurrentUser(@Req() req: any) {
     const { id } = req.user as IJwtPayload;
     const user = await this.userService.findById(id);
-    console.log('Current user:', user);
     return {
       message: 'Get current user successfully',
       data: user,

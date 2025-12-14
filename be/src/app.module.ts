@@ -1,5 +1,4 @@
 import {
-  ClassSerializerInterceptor,
   MiddlewareConsumer,
   Module,
   NestModule,
@@ -11,10 +10,6 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { ArticleController } from './modules/article/article.controller';
-import { CommentController } from './modules/comment/comment.controller';
-import { TagController } from './modules/tag/tag.controller';
-import { NotificationController } from './modules/notification/notification.controller';
 import { JwtModule, JwtModuleAsyncOptions } from '@nestjs/jwt';
 import { jwtConfig } from './configs/jwt.config';
 import {
@@ -22,7 +17,6 @@ import {
   ThrottlerModuleOptions,
   ThrottlerGuard,
 } from '@nestjs/throttler';
-import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ArticleModule } from './modules/article/article.module';
 import { AuthMiddleware } from './common/middlewares/auth.middleware';
 

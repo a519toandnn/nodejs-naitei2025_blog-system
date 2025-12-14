@@ -7,13 +7,11 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleEntity } from './entities/article.entity';
-import { ArrayContains, DataSource, In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UserService } from '../user/user.service';
 import { TagEntity } from '../tag/entities/tag.entity';
 import { TagService } from '../tag/tag.service';
 import { FindManyArticlesQueryDto } from './dto/find-many-articles-query.dto';
-import { CreateCommentDto } from '../comment/dto/create-comment.dto';
-import { CommentService } from '../comment/comment.service';
 import readingTime from 'reading-time';
 import { ArticleStatus } from 'src/common/class/enum/article.enum';
 
@@ -171,13 +169,27 @@ export class ArticleService {
     article: ArticleEntity,
   ) {
     const updateArticleKeys = Object.keys(updateArticleDto);
-    const [tagList, ...restKeys] = updateArticleKeys;
-    const isNoChange =
-      restKeys.every((key) => article[key] === updateArticleDto[key]) &&
-      article.tagList.every((tag) =>
-        updateArticleDto.tagList?.includes(tag.name),
-      );
-    if (isNoChange) {
+    let isChanged = false;
+    for (const key of updateArticleKeys) {
+      if (key === 'tagList') {
+        const currentTags =
+          article.tagList?.map((tag) => tag.name).sort() || [];
+        const updatedTags = updateArticleDto.tagList?.slice().sort() || [];
+        if (
+          currentTags.length !== updatedTags.length ||
+          !currentTags.every((tag, idx) => tag === updatedTags[idx])
+        ) {
+          isChanged = true;
+          break;
+        }
+      } else {
+        if (article[key] !== updateArticleDto[key]) {
+          isChanged = true;
+          break;
+        }
+      }
+    }
+    if (!isChanged) {
       throw new ConflictException('Update article failed', {
         description: 'No changes detected',
       });
@@ -215,7 +227,10 @@ export class ArticleService {
   }
 
   async remove(slug: string, authorId: number) {
-    const article = await this.articleRepository.findOne({ where: { slug } });
+    const article = await this.articleRepository.findOne({
+      where: { slug },
+      relations: { author: true },
+    });
     if (!article) {
       throw new ConflictException('Delete article failed', {
         description: 'Article not found',
