@@ -1,13 +1,66 @@
-import { Expose } from 'class-transformer';
-import { UserBasicDto } from 'src/modules/user/dto/user-response.dto';
+import { Expose, Transform, Type } from 'class-transformer';
 
-export class CommentDto {
+class AuthorResponseDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  username: string;
+
+  @Expose()
+  image: string;
+}
+
+export class CommentResponseDto {
+  @Expose()
+  id: number;
+
   @Expose()
   body: string;
+
   @Expose()
-  author: UserBasicDto;
+  depth: number;
+
   @Expose()
-  createdAt: Date;
+  replyCount: number;
+
   @Expose()
-  replies: CommentDto[];
+  @Type(() => AuthorResponseDto)
+  author: AuthorResponseDto;
+
+  @Expose()
+  @Transform(({ obj }) => obj.parentComment?.id || null)
+  parentId: number | null;
+
+  @Expose()
+  created_at: Date;
+
+  @Expose()
+  updated_at: Date;
+
+  @Expose()
+  @Type(() => CommentResponseDto)
+  replies?: CommentResponseDto[];
+
+  @Expose()
+  hasMoreReplies?: boolean;
 }
+
+export class CommentListResponseDto {
+  @Expose()
+  @Type(() => CommentResponseDto)
+  items: CommentResponseDto[];
+
+  @Expose()
+  total: number;
+
+  @Expose()
+  hasMore: boolean;
+
+  @Expose()
+  nextCursor: number | null;
+}
+

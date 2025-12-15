@@ -19,6 +19,8 @@ import {
 } from '@nestjs/throttler';
 import { ArticleModule } from './modules/article/article.module';
 import { AuthMiddleware } from './common/middlewares/auth.middleware';
+import { TagModule } from './modules/tag/tag.module';
+import { CommentModule } from './modules/comment/comment.module';
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { AuthMiddleware } from './common/middlewares/auth.middleware';
     UserModule,
     AuthModule,
     ArticleModule,
+    TagModule,
+    CommentModule
   ],
   controllers: [AppController],
   providers: [AppService],

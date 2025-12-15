@@ -1,6 +1,6 @@
 import { Expose, Transform, Type } from 'class-transformer';
 import { ArticleStatus } from 'src/common/class/enum/article.enum';
-import { CommentDto } from 'src/modules/comment/dto/comment-response.dto';
+import { CommentResponseDto } from 'src/modules/comment/dto/comment-response.dto';
 import { TagEntity } from 'src/modules/tag/entities/tag.entity';
 import { UserBasicDto } from 'src/modules/user/dto/user-response.dto';
 
@@ -44,8 +44,8 @@ export class ArticleDetailDto extends ArticleListItemDto {
   @Expose()
   body: string;
   @Expose()
-  @Type(() => CommentDto)
-  comments: CommentDto[];
+  @Type(() => CommentResponseDto)
+  comments: CommentResponseDto[];
   @Expose()
   favorited: boolean;
   @Expose()
