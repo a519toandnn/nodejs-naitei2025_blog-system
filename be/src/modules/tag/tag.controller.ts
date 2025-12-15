@@ -16,19 +16,19 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
-  @Post()
-  create(@Body() createTagDto: CreateTagDto) {
-    return this.tagService.create(createTagDto);
-  }
-
   @Get()
-  findByName(@Query('name') name: string) {
-    return this.tagService.findByName(name);
-  }
+  async findAll() {
+    const tags = await this.tagService.findAll();
+    if (!tags || tags.length === 0) {
+      return {
+        message: 'No tags found',
+      };
+    }
+    const result = tags.map((tag) => tag.name);
 
-  @Get('all')
-  findAll() {
-    return this.tagService.findAll();
+    return {
+      message: 'Tags retrieved successfully',
+      data: result,
+    };
   }
-
 }

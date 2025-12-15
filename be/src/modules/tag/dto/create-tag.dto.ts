@@ -1,5 +1,5 @@
 import { MaxLength } from "class-validator";
-import { StringRequired } from "src/common/decorators";
+import { StringRequired } from "src/common/decorators/validate.decorator";
 
 export class CreateTagDto {
     @StringRequired('Name')

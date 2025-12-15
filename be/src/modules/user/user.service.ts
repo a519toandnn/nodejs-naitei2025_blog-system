@@ -12,7 +12,6 @@ import { Like, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { PASSWORD_SALT_ROUNDS } from 'src/common/constants/user.constant';
 import { JwtService } from '@nestjs/jwt';
-import { IUser } from 'src/common/interfaces/user.interface';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -86,7 +85,7 @@ export class UserService {
 
     const result = await this.userRepository.findOne({
       where: { id },
-      relations: ['following', 'followers'],
+      relations: ['following', 'followers', 'favoritedArticles', 'articles'],
     });
     if (!result) {
       throw new NotFoundException('User not found', {
@@ -95,32 +94,6 @@ export class UserService {
     }
 
     return result;
-  }
-
-  async findByIdWithArticleCount(
-    id: number,
-  ): Promise<UserEntity & { articleCount: number }> {
-    if (isNaN(id)) {
-      throw new BadRequestException('Invalid user ID', {
-        description: 'User ID must be a number',
-      });
-    }
-
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.following', 'following')
-      .leftJoinAndSelect('user.followers', 'followers')
-      .loadRelationCountAndMap('user.articleCount', 'user.articles')
-      .where('user.id = :id', { id })
-      .getOne();
-
-    if (!user) {
-      throw new NotFoundException('User not found', {
-        description: `No user found with ID ${id}`,
-      });
-    }
-
-    return user as UserEntity & { articleCount: number };
   }
 
   async findByEmail(email: string) {
@@ -275,25 +248,6 @@ export class UserService {
     return user.following;
   }
 
-  async countFollowers(userId: number) {
-    const totalFollowers = await this.userRepository.count({
-      where: { following: { id: userId } },
-    });
-    return totalFollowers;
-  }
-
-  async countFollowing(userId: number) {
-    const totalFollowing = await this.userRepository.count({
-      where: { followers: { id: userId } },
-    });
-    return totalFollowing;
-  }
-
-  async countArticles(userId: number) {
-    const user = await this.findById(userId);
-    return user.articles.length;
-  }
-
   async listUsers(options: {
     page?: number;
     limit?: number;
@@ -318,8 +272,6 @@ export class UserService {
 
     // Tối ưu: Đếm số lượng relation bằng subquery trong 1 lần gọi DB
     queryBuilder
-      .loadRelationCountAndMap('user.followingCount', 'user.following')
-      .loadRelationCountAndMap('user.followersCount', 'user.followers')
       .skip((page - 1) * limit)
       .take(limit)
       .orderBy('user.id', 'ASC');
@@ -329,7 +281,7 @@ export class UserService {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      users,
+      items: users,
       pagination: {
         page,
         limit,
